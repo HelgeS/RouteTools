@@ -4,6 +4,7 @@ import csv
 import json
 import sys
 import requests
+#import srtm
 from math import radians, cos, sin, asin, sqrt
 
 MAPQUEST_KEY = 'AD0IOzjhmAByUsyArJxvfjd2ne1KUs7y'
@@ -37,9 +38,9 @@ def maxspeedAll(points):
     overpassUrl = 'http://overpass-api.de/api/interpreter?data=%s'
     overpassQl = '[out:json];'
 
-    for i in range(0, len(points)/2-1):
-        lat1, lon1 = points[2*i:2*i + 2]
-        lat2, lon2 = points[2*i + 2:2*i + 4]
+    for i in range(0, len(points)-2, 2):
+        lat1, lon1 = points[i:i + 2]
+        lat2, lon2 = points[i + 2:i + 4]
         s = min(lat1, lat2)
         w = min(lon1, lon2)
         n = max(lat1, lat2)
@@ -55,7 +56,6 @@ def maxspeed(lon1, lat1, lon2, lat2):
     n = max(lat1, lat2)
     e = max(lon1, lon2)
     overpassUrl = 'http://overpass-api.de/api/interpreter?data=%s'
-    # overpassQl = '[out:json];way(51.648197,8.328058,51.6486399,8.3287396)["maxspeed"];out;' % (e, n, s, w)
     overpassQl = '[out:json];way(%f,%f,%f,%f)["maxspeed"]["highway"];out;' % (s, w, n, e)
     print(overpassQl)
     r = requests.get(overpassUrl % overpassQl)
