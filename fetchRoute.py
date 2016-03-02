@@ -48,7 +48,7 @@ def maxspeedAll(points):
         overpassQl += 'way(%f,%f,%f,%f)["maxspeed"]["highway"];' % (s, w, n, e)
 
     overpassQl += "out;"
-    print(overpassQl)
+    #print(overpassQl)
 
 def maxspeed(lon1, lat1, lon2, lat2):
     s = min(lat1, lat2)
@@ -57,7 +57,7 @@ def maxspeed(lon1, lat1, lon2, lat2):
     e = max(lon1, lon2)
     overpassUrl = 'http://overpass-api.de/api/interpreter?data=%s'
     overpassQl = '[out:json];way(%f,%f,%f,%f)["maxspeed"]["highway"];out;' % (s, w, n, e)
-    print(overpassQl)
+    #print(overpassQl)
     r = requests.get(overpassUrl % overpassQl)
 
     if r.status_code != 200:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     MAPQUEST_KEY, locationFrom, locationTo)
     r = requests.get(dirUrl)
 
-    if r.status_code != 200:
+    if r.status_code != 200 or r.json()['info']['statuscode'] != 0:
         print("Fehler bei Routenermittlung")
         print(r.text)
         sys.exit(1)
@@ -114,12 +114,12 @@ if __name__ == "__main__":
     MAPQUEST_KEY, route['sessionId'])
     r2 = requests.get(elUrl)
 
-    if r2.status_code != 200:
+    if r2.status_code != 200 or r2.json()['info']['statuscode'] != 0:
         print("Fehler bei Hoehenermittlung")
         print(r2.text)
         sys.exit(1)
 
-    routeName = '' # TODO: Generate from start and end
+    routeName = '%s_%s-%s_%s'  % (route['locations'][0]['street'], route['locations'][0]['adminArea5'],route['locations'][-1]['street'], route['locations'][-1]['adminArea5'])
     json.dump(r.json(), open('%s_route.json' % routeName, 'w'))
     json.dump(r2.json(), open('%s_elevation.json' % routeName, 'w'))
     elResp = r2.json()
@@ -147,7 +147,7 @@ if __name__ == "__main__":
             print('No maxspeed information')
             speedlimits.append(0)
 
-    with open('route.csv', 'w') as f:
+    with open('%s.csv' % routeName, 'w') as f:
         writer = csv.writer(f, delimiter=';')
 
         for i in range(0, len(distances)):
